@@ -21,7 +21,7 @@ export const generateProduct = () => {
         title: faker.commerce.productName(),
         description: faker.commerce.productDescription(),
         category: faker.commerce.department(),
-        price: faker.commerce.price(),
+        price: faker.number.float({ min: 10, max: 10000, precision: 0.01 }),
         code: faker.database.mongodbObjectId(),
         stock: faker.number.int({ min: 10, max: 100 }),
         thumbnail: faker.image.urlPicsumPhotos()

@@ -1,8 +1,18 @@
 import { Router } from "express";
-import userModel from '../models/userModel.js';
+import userModel from '../dao/models/userModel.js';
 import session from 'express-session';
 import { createHash, isValidPassword } from "../utils.js";
 import passport from "passport";
+
+//FALTA COMPLETAR EL RESTO PARA EL MANEJO DE ERRORES
+//FALTA COMPLETAR EL RESTO PARA EL MANEJO DE ERRORES
+//FALTA COMPLETAR EL RESTO PARA EL MANEJO DE ERRORES
+/* import CustomError from '../services/errors/custom_error.js'
+import EErros from '../services/errors/enums.js'
+import { generateUserErrorInfo } from '../services/errors/info.js'  */
+//FALTA COMPLETAR EL RESTO PARA EL MANEJO DE ERRORES
+//FALTA COMPLETAR EL RESTO PARA EL MANEJO DE ERRORES
+//FALTA COMPLETAR EL RESTO PARA EL MANEJO DE ERRORES
 
 const router = Router();
 

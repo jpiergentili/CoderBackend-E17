@@ -7,10 +7,11 @@ import passport from 'passport'
 import initializePassport from './passport.config.js'
 import dotenv from 'dotenv';
 
-import viewsRouter from './routes/views.router.js'
-import cartsRouter from './routes/carts.router.js'
-import cartRouter from './routes/cart.router.js'
-import sessionRouter from './routes/session.router.js'
+import viewsRouter from './routers/products.views.router.js'
+import cartsRouter from './routers/carts.router.js'
+import cartRouter from './routers/cart.router.js'
+import sessionRouter from './routers/session.router.js'
+import mockingRouter from './routers/mocking.router.js'
 
 const app = express();
 const PORT = process.env.PORT || 8080
@@ -20,8 +21,6 @@ dotenv.config();
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 
-/* const uri = 'mongodb+srv://javypier1:Q1w2e3r4@jp-backend-coder01.bavi18s.mongodb.net/'
- */
 //configuracion del motor de plantillas
 app.engine('handlebars', handlebars.engine())
 app.set('views', './src/views')
@@ -50,6 +49,7 @@ app.use(express.static('./src/public'))
 app.use('/api/carts', cartsRouter);
 app.use('/products', viewsRouter);
 app.use('/carts', cartRouter);
+app.use('/mockingproducts', mockingRouter);
 
 
 mongoose.set('strictQuery', false)
