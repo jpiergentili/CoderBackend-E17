@@ -3,7 +3,9 @@ import local from 'passport-local'
 import userModel from "./models/userModel.js"
 import { createHash, isValidPassword } from "./utils.js"
 import GitHubStrategy from 'passport-github2'
+import dotenv from 'dotenv';
 
+dotenv.config();
 
 const LocalStrategy = local.Strategy
 
@@ -16,8 +18,8 @@ const initializePassport = () => {
     }, async (req, username, password, done) => {
         const { first_name, last_name, email, age } = req.body
         try {
-            if (email === "adminCoder@coder.com") {
-                console.log('No se puede registrar el usuario adminCoder@coder.com')
+            if (email === process.env.ADMIN_EMAIL) {
+                console.log(`No se puede registrar el usuario ${process.env.ADMIN_EMAIL}`)
                 return done(null, false)
             } else { //consulto a la base de datos
                 try {
@@ -56,7 +58,7 @@ const initializePassport = () => {
         usernameField: 'email'
     }, async (username, password, done) => {
         try {
-            if (username === "adminCoder@coder.com" && password === "adminCod3r123") {
+            if (username === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASS) {
                 const admin = {
                     email: username,
                     role: 'admin'
@@ -82,9 +84,9 @@ const initializePassport = () => {
 
     // ****datos a guardar en variables de entorno****
     passport.use('github', new GitHubStrategy({
-        clientID: 'Iv1.2dd0364c45a5ab8e',
-        clientSecret: 'd73c89a9c91c3ceecf7c97c6200b78d1908e5a87',
-        callbackURL: 'http://localhost:8080/sessions/githubcallback'
+        clientID: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        callbackURL: process.env.CALLBACK_URL
     }, async (accessToken, refreshToken, profile, done) => {
         console.log(profile)
         try {
