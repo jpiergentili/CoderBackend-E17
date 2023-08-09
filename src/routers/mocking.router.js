@@ -11,4 +11,8 @@ router.get('/', async (req, res) => {
     res.json({status: 'success', payload: products})
 })
 
+/*  ejemplo de request GET anterior: 
+
+    http://localhost:8080/mockingproducts */
+
 export default router

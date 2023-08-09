@@ -13,6 +13,11 @@ import cartRouter from './routers/cart.router.js'
 import sessionRouter from './routers/session.router.js'
 import mockingRouter from './routers/mocking.router.js'
 
+import errorMiddleware from './middlewares/error.middleware.js';
+import CustomError from './services/errors/custom_errors.js';
+import EErrors from './services/errors/enums.js';
+import { generateDatabaseConnectionErrorInfo, generateRoutingErrorInfo } from './services/errors/info.js';
+
 const app = express();
 const PORT = process.env.PORT || 8080
 
@@ -40,8 +45,10 @@ app.use('/sessions', sessionRouter)
 
 //aplicamos passport como middleware en el servidor
 initializePassport()
-app.use(passport.initialize())
-app.use(passport.session())
+
+// Configuración de Passport antes del middleware de manejo de errores
+app.use(passport.initialize());
+app.use(passport.session());
 
 //configuracion de la carpeta publica
 app.use(express.static('./src/public'))
@@ -51,6 +58,20 @@ app.use('/products', viewsRouter);
 app.use('/carts', cartRouter);
 app.use('/mockingproducts', mockingRouter);
 
+// Middleware para manejar rutas no definidas
+app.all('*', (req, res, next) => {
+    const customError = CustomError.createError({
+        name: 'Ruta no definida',
+        message: 'La ruta solicitada no está definida en la aplicación',
+        cause: generateRoutingErrorInfo(),
+        code: EErrors.ROUTING_ERROR
+    });
+    next(customError);
+});
+
+
+// Middleware de manejo de errores después de las rutas y Passport
+app.use(errorMiddleware);
 
 mongoose.set('strictQuery', false)
 

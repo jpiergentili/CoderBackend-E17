@@ -4,4 +4,4 @@ const EErros = {
     DATABASE_ERROR: 3
 }
 
-export default EErros
+export default EErros; // Exporto el diccionario de errores

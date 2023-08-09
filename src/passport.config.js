@@ -5,6 +5,10 @@ import { createHash, isValidPassword } from "./utils.js"
 import GitHubStrategy from 'passport-github2'
 import dotenv from 'dotenv';
 
+import CustomError from './services/errors/custom_errors.js'
+import EErros from './services/errors/enums.js';
+import { generateUserErrorInfo, generateAdminErrorInfo, generateLoginErrorInfo, generateGithubErrorInfo } from './services/errors/info.js';
+
 dotenv.config();
 
 const LocalStrategy = local.Strategy
@@ -19,14 +23,22 @@ const initializePassport = () => {
         const { first_name, last_name, email, age } = req.body
         try {
             if (email === process.env.ADMIN_EMAIL) {
-                console.log(`No se puede registrar el usuario ${process.env.ADMIN_EMAIL}`)
-                return done(null, false)
+                throw CustomError.createError({
+                    name: 'Registro no permitido',
+                    message: 'No se puede registrar el usuario administrador',
+                    cause: generateAdminErrorInfo(email),
+                    code: EErros.INVALID_TYPES_ERROR
+                });
             } else { //consulto a la base de datos
                 try {
                     const user = await userModel.model.findOne({ email: username })
                     if (user) {
-                        console.log('User already exists')
-                        return done(null, false) //callback done para respuesta en el caso de que ya exista el usuario
+                        throw CustomError.createError({
+                            name: 'Usuario existente',
+                            message: `El usuario ${username} ya existe en la base de datos`,
+                            cause: generateUserErrorInfo(user),
+                            code: EErros.INVALID_TYPES_ERROR
+                        });
                     }
                     //si el usuario no esta ocupado en la base de datos, creo uno hasheando el pass
                     const newUser = {
@@ -37,7 +49,6 @@ const initializePassport = () => {
                         password: createHash(password),
                         role: 'user'
                     }
-
 
                     //guardo en base de datos el usuario
                     const result = await userModel.model.create(newUser)
@@ -66,14 +77,22 @@ const initializePassport = () => {
                 return done(null, admin)
 
             } else {
-
                 const user = await userModel.model.findOne({ email: username });
                 if (!user) {
-                    console.log('User not found');
-                    return done(null, false);
+                    throw CustomError.createError({
+                        name: 'Usuario no encontrado',
+                        message: 'El usuario no existe en la base de datos',
+                        cause: generateLoginErrorInfo(), // Usa la información de error de inicio de sesión
+                        code: EErros.DATABASE_ERROR
+                    });
                 }
                 if (!isValidPassword(user, password)) {
-                    return done(null, false);
+                    return done(CustomError.createError({
+                        name: 'Error en login con Github',
+                        message: 'Error al intentar iniciar sesión con Github',
+                        cause: generateGithubErrorInfo(), // Usa la información de error de inicio de sesión con Github
+                        code: EErros.DATABASE_ERROR
+                    }));
                 }
                 return done(null, user);
             }
@@ -82,13 +101,12 @@ const initializePassport = () => {
         }
     }));
 
-    // ****datos a guardar en variables de entorno****
     passport.use('github', new GitHubStrategy({
         clientID: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
         callbackURL: process.env.CALLBACK_URL
     }, async (accessToken, refreshToken, profile, done) => {
-        console.log(profile)
+        /* console.log(profile) */
         try {
             const user = await userModel.model.findOne({ email: profile._json.email })
             if (user) return done(null, user) //si ya existe el usuario. lo retorno
@@ -103,9 +121,12 @@ const initializePassport = () => {
             return done(null, newUser)
 
         } catch (err) {
-            return done('Error to login with Github')
+            return done(CustomError.createError({
+                name: 'Error en login con Github',
+                message: 'Error al intentar iniciar sesión con Github',
+                code: EErros.DATABASE_ERROR
+            }));
         }
-
     }))
 
     //serialize y deserialize
